@@ -1,4 +1,6 @@
 include("lexer.jl")
 
-test = "test"
-lexer(test)
+test = "func main()::String\n\tnum::Int = 34\nend"
+tokens = lexer(test)
+display(tokens)
+
