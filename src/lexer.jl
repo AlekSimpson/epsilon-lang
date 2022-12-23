@@ -1,5 +1,5 @@
 struct Token
-    tok_type::String
+    type::String
     value::Any
     row::Int
     col::Int
@@ -46,7 +46,6 @@ function check_symbol(input_char::String)::Token
     char_dict = Dict("[" => "LBRACKET", 
                      "]" => "RBRACKET", 
                      "#" => "COMMENT", 
-                     " " => "SPACE", 
                      "+" => "ADD", 
                      "-" => "SUB",
                      "*" => "MULT",
@@ -62,6 +61,17 @@ function check_symbol(input_char::String)::Token
     return Tok(char_dict[input_char], input_char)
 end
 
+# checks if the given input is a keyword or not
+function check_for_keyword(input::String)::Token
+    keywords::Vector{String} = ["var", "func", "if", "while", "for", "elif", "end", "in"]
+   for keyword in keywords
+       if input == keyword
+           return Tok(uppercase(keyword), input)
+       end
+   end
+   return Tok("IDENTIFIER", input)
+end
+
 # Inputs source code outputs list of tokens
 function lexer(input::String)::Array{Token}
     items::Array{String, 1} = split(input, "")
@@ -70,6 +80,7 @@ function lexer(input::String)::Array{Token}
     push!(items, "EOF")
     numbers = "1234567890"
     alphanum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
+    scanning_array = false
 
     while true
         # checks if end of file has been reached
@@ -83,6 +94,17 @@ function lexer(input::String)::Array{Token}
             continue
         end
 
+        # logic for if a space should be added or not
+        if items[c_idx] == " "
+            if scanning_array
+                tok = Tok("SPACE", " ")
+                push!(tokens, tok)
+            end
+            c_idx += 1
+            continue
+        end
+
+        # checks for string opening
         if items[c_idx] == "\""
             string = get_full_string(items, c_idx)
             push!(tokens, Tok("STRING", string))
@@ -101,7 +123,8 @@ function lexer(input::String)::Array{Token}
         # check for words 
         if check_for_chars(items[c_idx], alphanum)
             word = get_full_item(items, c_idx, alphanum)
-            push!(tokens, Tok("IDENTIFIER", word))
+            tok = check_for_keyword(word) # returns keyword tok if it is a keyword, else just returns identifier tok
+            push!(tokens, tok) 
             c_idx += length(word)
             continue
         end
@@ -120,6 +143,11 @@ function lexer(input::String)::Array{Token}
         # checks for symbols
         tok = check_symbol(items[c_idx])
         push!(tokens, tok)
+        if tok.type == "LBRACKET"
+            scanning_array = true
+        elseif tok.type == "RBRACKET"
+            scanning_array = false
+        end
         c_idx += 1
     end
 

@@ -5,7 +5,7 @@ func main()::Void
      ptr* = 5
      print(ptr*)
      
-     var sum::Int = add(a a) # returns 10
+     var sum::Int = add(a, a) # returns 10
 
      if sum == 5
 	print("it did not work")
