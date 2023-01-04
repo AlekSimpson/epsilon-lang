@@ -1,14 +1,4 @@
-struct Token
-    type::String
-    value::Any
-    row::Int
-    col::Int
-end
-
-# Token Initializer
-function Tok(tok_type::String, value::Any)::Token
-    return Token(tok_type, value, 0, 0)
-end
+include("node.jl")
 
 # checks if input is a letter or _
 function check_for_chars(input_char::String, chars::String)::Bool
@@ -58,18 +48,18 @@ function check_symbol(input_char::String)::Token
                      "=" => "ASSIGN",
                      "!" => "NOT",
                      ":" => "RANGE")
-    return Tok(char_dict[input_char], input_char)
+    return Token(char_dict[input_char], input_char)
 end
 
 # checks if the given input is a keyword or not
 function check_for_keyword(input::String)::Token
     keywords::Vector{String} = ["var", "func", "if", "while", "for", "elif", "end", "in"]
-   for keyword in keywords
-       if input == keyword
-           return Tok(uppercase(keyword), input)
-       end
-   end
-   return Tok("IDENTIFIER", input)
+    for keyword in keywords
+        if input == keyword
+            return Token(uppercase(keyword), input)
+        end
+    end
+    return Token("IDENTIFIER", input)
 end
 
 # Inputs source code outputs list of tokens
@@ -97,7 +87,7 @@ function lexer(input::String)::Array{Token}
         # logic for if a space should be added or not
         if items[c_idx] == " "
             if scanning_array
-                tok = Tok("SPACE", " ")
+                tok = Token("SPACE", " ")
                 push!(tokens, tok)
             end
             c_idx += 1
@@ -107,7 +97,7 @@ function lexer(input::String)::Array{Token}
         # checks for string opening
         if items[c_idx] == "\""
             string = get_full_string(items, c_idx)
-            push!(tokens, Tok("STRING", string))
+            push!(tokens, Token("STRING", string))
             c_idx += length(string) + 2 
             continue
         end
@@ -115,7 +105,7 @@ function lexer(input::String)::Array{Token}
         # check for numbers
         if check_for_chars(items[c_idx], numbers)
             number = get_full_item(items, c_idx, numbers)
-            push!(tokens, Tok("NUMBER", number))
+            push!(tokens, Token("NUMBER", number))
             c_idx += length(number) 
             continue
         end
@@ -131,11 +121,11 @@ function lexer(input::String)::Array{Token}
 
         # checks for symbols that are a double like :: or ==
         if items[c_idx] == ":" && items[c_idx + 1] == ":" 
-            push!(tokens, Tok("TYPE_ASSIGN", "::"))
+            push!(tokens, Token("TYPE_ASSIGN", "::"))
             c_idx += 2
             continue
         elseif items[c_idx] == "=" && items[c_idx + 1] == "="
-            push!(tokens, Tok("EQUALITY", "=="))
+            push!(tokens, Token("EQUALITY", "=="))
             c_idx += 2
             continue
         end

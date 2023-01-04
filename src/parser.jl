@@ -1,5 +1,4 @@
 include("node.jl")
-include("lexer.jl")
 
 mutable struct ParserState
     tokens::Vector{Token}
@@ -8,49 +7,87 @@ mutable struct ParserState
     nodes::Vector{AbstractNode}
 end
 
-function forward!(state::ParserState)
-    if state.idx != length(state.tokens)
-        state.idx += 1
+function peek_ahead(state::ParserState)
+    if state.idx + 1 > length(state.tokens)
+        return state.curr_tok
     end
-    curr_tok = state.tokens[state.idx]
-    return nothing
+    return state.tokens[state.idx + 1]
+end
+
+function forward!(state::ParserState, amount=1)
+    if state.idx + amount <= length(state.tokens)
+        state.idx += amount 
+    end
+    state.curr_tok = state.tokens[state.idx]
 end
 
 function parse(tokens::Vector{Token})::Vector{AbstractNode}
     state::ParserState = ParserState(tokens, 1, tokens[1], [])
-    node = check_atom!(tokens, state)
+    node = expr(state)
     state.nodes = [node]
 
     return state.nodes
 end
 
-function check_atom!(with_ops::Vector{Token}, state::ParserState)::AbstractNode
-    left = 0
-    op = 0
-    right = 0
-    if state.curr_tok.type == "NUMBER"
-        left = state.curr_tok
+function expr(state::ParserState)
+    return sum(state)
+end
+
+function sum(state::ParserState)
+    left = product(state)
+    if peek_ahead(state).type == "ADD" || peek_ahead(state).type == "SUB"
         forward!(state)
-        if CA_tok_with_ops(with_ops, state.curr_tok)
-            op = state.curr_tok 
-        end
-    else
-        # push!(state.nodes, NumberNode(state.curr_tok))
+        op = state.curr_tok
+        forward!(state)
+        right = product(state)
+        return BinOpNode(left, op, right)
+    elseif peek_ahead(state).type =="MULT" || peek_ahead(state).type == "DIV"
+        forward!(state)
+        op = state.curr_tok
+        forward!(state)
+        right = product(state)
+        return BinOpNode(left, op, right)
+    end
+
+    return left
+end
+
+function product(state::ParserState)
+    left = value(state)
+    if peek_ahead(state).type == "MULT" || peek_ahead(state).type == "DIV"
+        forward!(state)
+        op = state.curr_tok 
+        forward!(state)
+        right = value(state)
+        return BinOpNode(left, op, right)
+    end
+    return left
+end
+
+#function power(state::ParserState)
+#    left = value(state)
+#    if peek_ahead(state).type == "EXPONENT"
+#        op = peek_ahead(state)
+#        forward!(state, 2)
+#        right = power(state)
+#        return BinOpNode(left, op, right)
+#    end
+#    return left
+#end
+
+function value(state::ParserState)
+    if state.curr_tok.type == "LPAREN"
+        forward!(state)
+        return expr(state)
+    elseif state.curr_tok.type == "NUMBER"
         return NumberNode(state.curr_tok)
     end
-
-    forward!(state)
-    right = check_atom!(with_ops, state)
-
-    # push!(state.nodes, BinOpNode(left, op, right))
-    return BinOpNode(left, op, right)
 end
 
-function CA_tok_with_ops(ops::Vector{Token}, token::Token)::Bool
-    for op in ops
-        if token.type == op.type
-            return true
-        end
-    end
-    return false
-end
+#= 
+expr    <- sum
+sum     <- product ((+ || -) product)? 
+product <- power ((* || /) power))?
+power   <- value (^ power)?
+value   <- num || '(' expr ')'
+=#

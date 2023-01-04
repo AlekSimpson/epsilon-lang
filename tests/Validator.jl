@@ -1,19 +1,23 @@
 include("../src/lexer.jl")
+include("../src/node.jl")
 
 struct Test
     name::String
-    input::String
-    correct::Vector{String}
+    input
+    correct
 end
 
 struct Result
     result::Bool
-    failed_with::Vector{String}
-    test_name::String
+    failed_with
+    test_name
 end
 
-function validate_test(test::Test)::Result
-    result::Vector{Token} = lexer(test.input)
+
+function validate_test(test::Test, test_cat="LEXER")::Result
+    categories = ["LEXER"=>lexer, "PARSER"=>parse]
+
+    result::Vector{Token} = categories[test_cat](test.input)
     formatted::Vector{String} = []
     for tok in result
         push!(formatted, tok.value)
