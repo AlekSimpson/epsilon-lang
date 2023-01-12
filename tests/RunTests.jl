@@ -2,8 +2,8 @@ include("Validator.jl")
 include("lexer/test_cases.jl")
 include("parser/test_cases.jl")
 
-lexer_results  = validate_test.(lexer_tests)
-# parser_results = validate_test.(parser_tests)
+lexer_results  = validate_test.(lexer_tests, "LEXER")
+parser_results = validate_test.(parser_tests, "PARSER")
 
 function display_result(results::Vector{Result}, name::String)::Int
     amount_failed::Int = 0
@@ -30,7 +30,7 @@ end
 tests_amt = length(lexer_results)
 tests_amt += length(parser_results)
 amt_failed = display_result(lexer_results, "Lexer")
-# amt_failed += display_result(parser_results, "Parser")
+amt_failed += display_result(parser_results, "Parser")
 
 println("\nFinished $(tests_amt) tests -- $(amt_failed)/$(tests_amt) failed.")
 

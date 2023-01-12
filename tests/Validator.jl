@@ -1,4 +1,5 @@
 include("../src/lexer.jl")
+include("../src/parser.jl")
 include("../src/node.jl")
 
 struct Test
@@ -15,9 +16,9 @@ end
 
 
 function validate_test(test::Test, test_cat="LEXER")::Result
-    categories = ["LEXER"=>lexer, "PARSER"=>parse]
+    categories = Dict("LEXER"=>lexer, "PARSER"=>parse)
 
-    result::Vector{Token} = categories[test_cat](test.input)
+    result = categories[test_cat](test.input)
     formatted::Vector{String} = []
     for tok in result
         push!(formatted, tok.value)

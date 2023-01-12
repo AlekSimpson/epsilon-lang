@@ -40,7 +40,7 @@ function sum(state::ParserState)
         op = state.curr_tok
         forward!(state)
         right = product(state)
-        return BinOpNode(left, op, right)
+        return BinOpNode(left, op, right) 
     elseif peek_ahead(state).type =="MULT" || peek_ahead(state).type == "DIV"
         forward!(state)
         op = state.curr_tok
