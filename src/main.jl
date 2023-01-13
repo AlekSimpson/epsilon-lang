@@ -2,7 +2,7 @@ include("lexer.jl")
 include("parser.jl")
 
 #test = "var name::Array<Int> = [1 2 3 4 5 6 7 8]"
-test = "1 + 2"
+test = "1 ^ 2"
 tokens = lexer(test)
 println(tokens)
 

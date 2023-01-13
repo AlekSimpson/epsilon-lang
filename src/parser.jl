@@ -53,7 +53,8 @@ function sum(state::ParserState)
 end
 
 function product(state::ParserState)
-    left = value(state)
+    # left = value(state)
+    left = power(state)
     if peek_ahead(state).type == "MULT" || peek_ahead(state).type == "DIV"
         forward!(state)
         op = state.curr_tok 
@@ -64,16 +65,16 @@ function product(state::ParserState)
     return left
 end
 
-#function power(state::ParserState)
-#    left = value(state)
-#    if peek_ahead(state).type == "EXPONENT"
-#        op = peek_ahead(state)
-#        forward!(state, 2)
-#        right = power(state)
-#        return BinOpNode(left, op, right)
-#    end
-#    return left
-#end
+function power(state::ParserState)
+    left = value(state)
+    if peek_ahead(state).type == "EXPONENT"
+        op = peek_ahead(state)
+        forward!(state, 2)
+        right = power(state)
+        return BinOpNode(left, op, right)
+    end
+    return left
+end
 
 function value(state::ParserState)
     if state.curr_tok.type == "LPAREN"

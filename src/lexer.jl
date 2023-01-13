@@ -47,7 +47,8 @@ function check_symbol(input_char::String)::Token
                      ">" => "RCARROT",
                      "=" => "ASSIGN",
                      "!" => "NOT",
-                     ":" => "RANGE")
+                     ":" => "RANGE",
+                     "^" => "EXPONENT")
     return Token(char_dict[input_char], input_char)
 end
 

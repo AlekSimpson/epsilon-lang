@@ -48,8 +48,15 @@ two_diff_ops = Test("Two Different Operators",
                      Token("ADD", "+"), 
                      Token("NUMBER", "2"),
                      Token("MULT", "*"),
-                     Token("NUMBER", "4")]
-                   , TDO_correct) 
+                     Token("NUMBER", "4")],
+                    TDO_correct) 
 
+exp_op_correct = [BinOpNode(NumberNode(Token("NUMBER", "1")), Token("EXPONENT", "^"), NumberNode(Token("NUMBER", "2")))]
 
-parser_tests = [add_op, sub_op, mult_op, div_op, two_diff_ops]
+exp_op = Test("Exponent Operator",
+              [Token("NUMBER", "1"),
+               Token("EXPONENT", "^"),
+               Token("NUMBER", "2")],
+              exp_op_correct)
+
+parser_tests = [add_op, sub_op, mult_op, div_op, two_diff_ops, exp_op]
