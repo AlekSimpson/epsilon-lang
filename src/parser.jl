@@ -29,53 +29,45 @@ function parse(tokens::Vector{Token})::Vector{AbstractNode}
     return state.nodes
 end
 
+# this function starts the expression check and from the entire grammar tree is checked
 function expr(state::ParserState)
-    return sum(state)
+    return sum_check(state)
 end
 
-function sum(state::ParserState)
+# first layer, checks for add and sub (unless the expression JUST containts mult and div then it also checks for that)
+function sum_check(state::ParserState)
     left = product(state)
-    if peek_ahead(state).type == "ADD" || peek_ahead(state).type == "SUB"
-        forward!(state)
-        op = state.curr_tok
-        forward!(state)
-        right = product(state)
-        return BinOpNode(left, op, right) 
-    elseif peek_ahead(state).type =="MULT" || peek_ahead(state).type == "DIV"
-        forward!(state)
-        op = state.curr_tok
-        forward!(state)
-        right = product(state)
-        return BinOpNode(left, op, right)
-    end
 
+    bin_op_return = bin_op(state, product, ["ADD", "SUB", "MULT", "DIV"]) 
+    if bin_op_return != 0
+        return BinOpNode(left, bin_op_return[1], bin_op_return[2])
+    end
     return left
 end
 
+# second layer checks for mult and div ops
 function product(state::ParserState)
-    # left = value(state)
     left = power(state)
-    if peek_ahead(state).type == "MULT" || peek_ahead(state).type == "DIV"
-        forward!(state)
-        op = state.curr_tok 
-        forward!(state)
-        right = value(state)
-        return BinOpNode(left, op, right)
+    
+    bin_op_return = bin_op(state, power, ["MULT", "DIV"])
+    if bin_op_return != 0 
+        return BinOpNode(left, bin_op_return[1], bin_op_return[2])
     end
     return left
 end
 
+# third layer checks for exponent operations
 function power(state::ParserState)
     left = value(state)
-    if peek_ahead(state).type == "EXPONENT"
-        op = peek_ahead(state)
-        forward!(state, 2)
-        right = power(state)
-        return BinOpNode(left, op, right)
+
+    bin_op_return = bin_op(state, power, ["EXPONENT"])
+    if bin_op_return != 0
+        return BinOpNode(left, bin_op_return[1], bin_op_return[2])
     end
     return left
 end
 
+# the last layers checks for the most basic building blocks of an expression which are opening parenthese and numbers (for now)
 function value(state::ParserState)
     if state.curr_tok.type == "LPAREN"
         forward!(state)
@@ -85,6 +77,21 @@ function value(state::ParserState)
     end
 end
 
+# bin_op checks for operator types and then returns the operator and the right side of the expression.
+function bin_op(state::ParserState, next_check, operators::Vector{String})
+    peek = peek_ahead(state)
+
+    # equality results is a vector of zeros and ones, one represents the true cases for a match and 0 is the false case
+    # taking the sum of this list will either return 1 or 0, if 1 then we know a match was found else we know it did not match any operators
+    equality_results = sum(peek.type .== operators)
+
+    if equality_results == 1
+        forward!(state, 2)
+        right = next_check(state)
+        return [peek, right]
+    end
+    return 0
+end
 #= 
 expr    <- sum
 sum     <- product ((+ || -) product)? 
