@@ -65,6 +65,13 @@ end
 
 # first layer, checks for add and sub (unless the expression JUST containts mult and div then it also checks for that)
 function arith_expr(state::ParserState)
+    if state.curr_tok.type == NOT
+        not_tok = state.curr_tok
+        forward!(state)
+        negated = arith_expr(state)
+        return UnaryNode(not_tok, negated)
+    end
+
     left = term(state)
 
     bin_op_return = bin_op(state, arith_expr, [ADD, SUB, MULT, DIV]) 
@@ -103,6 +110,8 @@ function atom(state::ParserState)
         return expr(state)
     elseif state.curr_tok.type == NUMBER
         return NumberNode(state.curr_tok)
+    elseif state.curr_tok.type == BOOL
+        return BoolNode(state.curr_tok) 
     end
 end
 

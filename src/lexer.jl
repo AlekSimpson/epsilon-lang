@@ -61,7 +61,9 @@ function check_for_keyword(input::String)::Token
                     "for" => FOR, 
                     "elif" => ELIF, 
                     "end" => END, 
-                    "in" => IN)
+                    "in" => IN,
+                    "true" => BOOL, 
+                    "false" => BOOL)
     if input in keys(keywords)
         return Token(keywords[input], input)
     end
@@ -71,7 +73,8 @@ function check_for_keyword(input::String)::Token
 end
 
 function check_for_datatype(input::String)::TokenType
-    type_dict = Dict("Int" => NUMBER)
+    type_dict = Dict("Int"  => NUMBER,
+                     "Bool" => BOOL)
     if input in keys(type_dict)
         return type_dict[input]
     end

@@ -30,10 +30,11 @@
     RANGE 
     EXPONENT
     COMMENT
+    BOOL
 end
 
 #TODO: Add more of the datatypes lol
-DATA_TYPES = [NUMBER]
+DATA_TYPES = [NUMBER, BOOL]
 
 mutable struct Token
     type::TokenType
@@ -73,7 +74,20 @@ struct VarDecNode <: AbstractNode
         new(token, assigned_value, value)
     end
 
-    function no_type_conflict()::Bool
-        return token.type == assigned_value.token.type
-    end
+    no_type_conflict()::Bool = token.type == assigned_value.token.type
+end
+
+struct UnaryNode <: AbstractNode
+    token::Token 
+    node::AbstractNode
+    value::String
+
+    UnaryNode(token::Token, node::AbstractNode) = new(token, node, "$(token.value)$(node.value)")
+end
+
+struct BoolNode <: AbstractNode
+    token::Token
+    value::String
+
+    BoolNode(token::Token) = new(token, token.value)
 end
