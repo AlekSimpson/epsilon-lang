@@ -61,7 +61,7 @@ exp_op = ParserTest("Exponent Operator",
 
 var_dec_correct = VarDecNode(Token(NUMBER, "test"), NumberNode(Token(NUMBER, "5")))
 
-var_dec_op = ParserTest("Variable Declaration",
+var_dec = ParserTest("Variable Declaration",
                         [Token(VAR, "var"), 
                          Token(IDENTIFIER, "test"), 
                          Token(TYPE_ASSIGN, "::"), 
@@ -70,4 +70,15 @@ var_dec_op = ParserTest("Variable Declaration",
                          Token(NUMBER, "5")],
                         var_dec_correct)
 
-parser_tests = [add_op, sub_op, mult_op, div_op, two_diff_ops, exp_op, var_dec_op]
+bool_true_correct = BoolNode(Token(BOOL, "true"))
+bool_false_correct = BoolNode(Token(BOOL, "false"))
+
+bool_true = ParserTest("Boolean True Reference",
+                       [Token(BOOL, "true")],
+                       bool_true_correct)
+
+bool_false = ParserTest("Boolean False Reference",
+                       [Token(BOOL, "false")],
+                       bool_false_correct)
+
+parser_tests = [add_op, sub_op, mult_op, div_op, two_diff_ops, exp_op, var_dec, bool_true, bool_false]
