@@ -9,6 +9,7 @@ struct Test
 end
 
 struct Result
+    test::Test
     result::Bool
     failed_with
     test_name
@@ -27,8 +28,9 @@ function validate_test(test::Test, test_cat="LEXER")::Result
             push!(formatted, element)
         end
     end
+    println("FORMATTED IS $(formatted[1]) \n             $(test.correct[1])")
     test_res = formatted == test.correct
-    return Result(test_res, formatted, test.name)
+    return Result(test, test_res, formatted, test.name)
 end
 
 

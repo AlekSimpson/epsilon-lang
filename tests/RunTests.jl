@@ -20,8 +20,12 @@ function display_result(results::Vector{Result}, name::String)::Int
         if !result.result
             amount_failed += 1
             error_msg = "\t  " * string(result.failed_with) * "\n"
+            correct_msg = "\t  " * string(result.test.correct) * "\n" 
             printstyled("\tFailed with:\n"; color=:red, underline=true)
             printstyled(error_msg; color=:red)
+            printstyled("\tShould Have Been:\n"; color=:red, underline=true)
+            printstyled(correct_msg; color=:red)
+            println()
         end
     end
     return amount_failed

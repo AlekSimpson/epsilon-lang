@@ -31,14 +31,52 @@ end
 
 # this function starts the expression check and from the entire grammar tree is checked
 function expr(state::ParserState)
-    return sum_check(state)
+    if state.curr_tok.type == VAR 
+        forward!(state)
+        if state.curr_tok.type == IDENTIFIER
+            var_name = state.curr_tok
+            forward!(state)
+
+            # NOTE: After you finish variable create beginning of error system, Error Report should include the entire lines nodes and the location of the error specficially
+            if state.curr_tok.type != TYPE_ASSIGN
+                println("ERROR: missing '::' in declaration")
+                return # error report
+            end
+
+            forward!(state)
+
+            # this basically is checking if state.curr_tok.type is not equal to any of the data types in the DATA_TYPES array
+            vector_check = sum(state.curr_tok.type .== DATA_TYPES)
+            if vector_check == 0
+                # need to check here if identifier is a type
+                println("ERROR: expected data type")
+                return # error report
+            end
+
+            var_name.type = state.curr_tok.type
+
+            forward!(state)
+            if state.curr_tok.type == ASSIGN
+                forward!(state)
+                value = expr(state)
+            end
+        end
+
+        ret_val = VarDecNode(var_name, value)
+        @assert ret_val !== nothing "expr(::ParserState) returning nothing!"
+        return VarDecNode(var_name, value) 
+    end
+
+    ret_val = arith_expr(state)
+    @assert ret_val !== nothing "arith_expr(::ParserState) returning nothing!"
+    return ret_val
 end
 
 # first layer, checks for add and sub (unless the expression JUST containts mult and div then it also checks for that)
-function sum_check(state::ParserState)
-    left = product(state)
+function arith_expr(state::ParserState)
+    left = term(state)
 
-    bin_op_return = bin_op(state, product, ["ADD", "SUB", "MULT", "DIV"]) 
+    bin_op_return = bin_op(state, arith_expr, [ADD, SUB, MULT, DIV]) 
     if bin_op_return != 0
         return BinOpNode(left, bin_op_return[1], bin_op_return[2])
     end
@@ -46,10 +84,10 @@ function sum_check(state::ParserState)
 end
 
 # second layer checks for mult and div ops
-function product(state::ParserState)
+function term(state::ParserState)
     left = power(state)
     
-    bin_op_return = bin_op(state, power, ["MULT", "DIV"])
+    bin_op_return = bin_op(state, power, [MULT, DIV])
     if bin_op_return != 0 
         return BinOpNode(left, bin_op_return[1], bin_op_return[2])
     end
@@ -58,9 +96,9 @@ end
 
 # third layer checks for exponent operations
 function power(state::ParserState)
-    left = value(state)
+    left = atom(state)
 
-    bin_op_return = bin_op(state, power, ["EXPONENT"])
+    bin_op_return = bin_op(state, power, [EXPONENT])
     if bin_op_return != 0
         return BinOpNode(left, bin_op_return[1], bin_op_return[2])
     end
@@ -68,24 +106,24 @@ function power(state::ParserState)
 end
 
 # the last layers checks for the most basic building blocks of an expression which are opening parenthese and numbers (for now)
-function value(state::ParserState)
-    if state.curr_tok.type == "LPAREN"
+function atom(state::ParserState)
+    if state.curr_tok.type == LPAREN
         forward!(state)
         return expr(state)
-    elseif state.curr_tok.type == "NUMBER"
+    elseif state.curr_tok.type == NUMBER
         return NumberNode(state.curr_tok)
     end
 end
 
 # bin_op checks for operator types and then returns the operator and the right side of the expression.
-function bin_op(state::ParserState, next_check, operators::Vector{String})
+function bin_op(state::ParserState, next_check, operators::Vector{TokenType})
     peek = peek_ahead(state)
 
     # equality results is a vector of zeros and ones, one represents the true cases for a match and 0 is the false case
     # taking the sum of this list will either return 1 or 0, if 1 then we know a match was found else we know it did not match any operators
-    equality_results = sum(peek.type .== operators)
+    vector_check = sum(peek.type .== operators) == 1
 
-    if equality_results == 1
+    if vector_check
         forward!(state, 2)
         right = next_check(state)
         return [peek, right]
