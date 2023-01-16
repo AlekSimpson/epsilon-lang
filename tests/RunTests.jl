@@ -2,8 +2,8 @@ include("Validator.jl")
 include("lexer/test_cases.jl")
 include("parser/test_cases.jl")
 
-lexer_results  = validate_test.(lexer_tests, "LEXER")
-parser_results = validate_test.(parser_tests, "PARSER")
+lexer_results  = validate_test.(lexer_tests)
+parser_results = validate_test.(parser_tests)
 
 function display_result(results::Vector{Result}, name::String)::Int
     amount_failed::Int = 0

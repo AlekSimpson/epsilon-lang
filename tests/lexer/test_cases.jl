@@ -1,29 +1,29 @@
 include("../Validator.jl")
 
-full_program = Test("Full Program Test", "func main(param::String)::Void\n\tvar name::Int = 45\nend",
+full_program = LexerTest("Full Program Test", "func main(param::String)::Void\n\tvar name::Int = 45\nend",
                     ["func", "main", "(", "param", "::", "String", ")", "::", "Void", "var", "name", "::", "Int", "=", "45", "end"])
 
-variable_test = Test("Variable Test", "var name::String = \"test string\"",
+variable_test = LexerTest("Variable Test", "var name::String = \"test string\"",
                      ["var", "name", "::", "String", "=", "test string"])
 
-add_test = Test("Add Test", "12 + 32", 
+add_test = LexerTest("Add Test", "12 + 32", 
                 ["12", "+", "32"])
 
-string_test = Test("String Test", "\"this is a string test\"", 
+string_test = LexerTest("String Test", "\"this is a string test\"", 
                    ["this is a string test"])
 
-function_dec = Test("Function Dec", "func main(param::Int)::Void",
+function_dec = LexerTest("Function Dec", "func main(param::Int)::Void",
                     ["func", "main", "(", "param", "::", "Int", ")", "::", "Void"])
 
-range_test = Test("Range Test", "1:3",
+range_test = LexerTest("Range Test", "1:3",
                   ["1", ":", "3"])
 
-equality_test = Test("Equality Test", "==",
+equality_test = LexerTest("Equality Test", "==",
                      ["=="])
 
-assignment_test = Test("Assignment Test", "::",
+assignment_test = LexerTest("Assignment Test", "::",
                        ["::"])
-array_test = Test("Array Test", "var arr::Array<Int> = [1 2]",
+array_test = LexerTest("Array Test", "var arr::Array<Int> = [1 2]",
                   ["var", "arr", "::", "Array", "<", "Int", ">", "=", "[", "1", " ", "2", "]"])
 
 lexer_tests = [string_test, variable_test, 
