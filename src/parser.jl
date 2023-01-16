@@ -33,34 +33,25 @@ end
 function expr(state::ParserState)
     if state.curr_tok.type == VAR 
         forward!(state)
-        if state.curr_tok.type == IDENTIFIER
-            var_name = state.curr_tok
-            forward!(state)
+        @assert state.curr_tok.type == IDENTIFIER "token type did not match expected IDENTIFIER"
+        var_name = state.curr_tok
+        forward!(state)
 
-            # NOTE: After you finish variable create beginning of error system, Error Report should include the entire lines nodes and the location of the error specficially
-            if state.curr_tok.type != TYPE_ASSIGN
-                println("ERROR: missing '::' in declaration")
-                return # error report
-            end
+        # NOTE: After you finish variable create beginning of error system, Error Report should include the entire lines nodes and the location of the error specficially
+        @assert (state.curr_tok.type == TYPE_ASSIGN) "token type did not match expected TYPE_ASSIGN"
 
-            forward!(state)
+        forward!(state)
 
-            # this basically is checking if state.curr_tok.type is not equal to any of the data types in the DATA_TYPES array
-            vector_check = sum(state.curr_tok.type .== DATA_TYPES)
-            if vector_check == 0
-                # need to check here if identifier is a type
-                println("ERROR: expected data type")
-                return # error report
-            end
+        # this basically is checking if state.curr_tok.type is not equal to any of the data types in the DATA_TYPES array
+        vector_check = sum(state.curr_tok.type .== DATA_TYPES)
+        @assert !(vector_check == 0) "token type did not match one of the expected datay types from DATA_TYPES"
 
-            var_name.type = state.curr_tok.type
+        var_name.type = state.curr_tok.type
 
-            forward!(state)
-            if state.curr_tok.type == ASSIGN
-                forward!(state)
-                value = expr(state)
-            end
-        end
+        forward!(state)
+        @assert !(state.curr_tok.type != ASSIGN) "token type did not match expected ASSIGN"
+        forward!(state)
+        value = expr(state)
 
         ret_val = VarDecNode(var_name, value)
         @assert ret_val !== nothing "expr(::ParserState) returning nothing!"
