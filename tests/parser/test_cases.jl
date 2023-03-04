@@ -81,4 +81,8 @@ bool_false = ParserTest("Boolean False Reference",
                        [Token(BOOL, "false")],
                        bool_false_correct)
 
-parser_tests = [add_op, sub_op, mult_op, div_op, two_diff_ops, exp_op, var_dec, bool_true, bool_false]
+unary_test = ParserTest("Unary Node",
+                        [Token(NOT, "!"), Token(BOOL, "true")],
+                        UnaryNode(Token(NOT, "!"), BoolNode(Token(BOOL, "true"))))
+
+parser_tests = [add_op, sub_op, mult_op, div_op, two_diff_ops, exp_op, var_dec, bool_true, bool_false, unary_test]

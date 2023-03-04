@@ -3,8 +3,8 @@ include("parser.jl")
 
 #test = "var name::Array<Int> = [1 2 3 4 5 6 7 8]"
 # test = "1 ^ 2"
-# test = "var test::Int = 5 + 5" 
-test = "!true"
+#test = "var test::Int = 5 + 5" 
+test = "var test::Int = \"bruh\""
 tokens = lexer(test)
 println(tokens)
 

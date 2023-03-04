@@ -55,6 +55,9 @@ function expr(state::ParserState)
 
         ret_val = VarDecNode(var_name, value)
         @assert ret_val !== nothing "expr(::ParserState) returning nothing!"
+        if VDN_has_type_conflict(ret_val)
+            @assert true "COBOLT ERROR: Variable had type conflict"
+        end
         return VarDecNode(var_name, value) 
     end
 

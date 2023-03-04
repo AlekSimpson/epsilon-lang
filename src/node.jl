@@ -51,9 +51,10 @@ struct BinOpNode <: AbstractNode
     left::AbstractNode
     op::Token
     right::AbstractNode
+    token::Token
     value::String
 
-    BinOpNode(left, op, right) = new(left, op, right, "$(left.value) $(op.value) $(right.value)")
+    BinOpNode(left, op, right) = new(left, op, right, left.token, "$(left.value) $(op.value) $(right.value)")
 end
         
 # Possibly will have to include more in this in the future
@@ -73,9 +74,9 @@ struct VarDecNode <: AbstractNode
         value = token.value * "::" * string(token.type) * " = " * assigned_value.value
         new(token, assigned_value, value)
     end
-
-    no_type_conflict()::Bool = token.type == assigned_value.token.type
 end
+
+VDN_has_type_conflict(node::VarDecNode)::Bool = node.token.type != node.assigned_value.token.type
 
 struct UnaryNode <: AbstractNode
     token::Token 
