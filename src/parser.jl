@@ -55,9 +55,8 @@ function expr(state::ParserState)
 
         ret_val = VarDecNode(var_name, value)
         @assert ret_val !== nothing "expr(::ParserState) returning nothing!"
-        if VDN_has_type_conflict(ret_val)
-            @assert true "COBOLT ERROR: Variable had type conflict"
-        end
+        # checks if variable type matches assigned value type
+        @assert !(VDN_has_type_conflict(ret_val)) "COBOLT ERROR: Variable had type conflict"
         return VarDecNode(var_name, value) 
     end
 
@@ -115,6 +114,8 @@ function atom(state::ParserState)
         return NumberNode(state.curr_tok)
     elseif state.curr_tok.type == BOOL
         return BoolNode(state.curr_tok) 
+    elseif state.curr_tok.type == STRING
+        return StringNode(state.curr_tok)
     end
 end
 

@@ -92,3 +92,10 @@ struct BoolNode <: AbstractNode
 
     BoolNode(token::Token) = new(token, token.value)
 end
+
+struct StringNode <: AbstractNode
+    token::Token
+    value::String
+
+    StringNode(token::Token) = new(token, token.value)
+end
