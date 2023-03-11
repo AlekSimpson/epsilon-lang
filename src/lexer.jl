@@ -73,8 +73,9 @@ function check_for_keyword(input::String)::Token
 end
 
 function check_for_datatype(input::String)::TokenType
-    type_dict = Dict("Int"  => NUMBER,
-                     "Bool" => BOOL)
+    type_dict = Dict("Int"    => NUMBER,
+                     "Bool"   => BOOL, 
+                     "String" => STRING)
     if input in keys(type_dict)
         return type_dict[input]
     end
@@ -133,10 +134,6 @@ function lexer(input::String)::Array{Token}
         if check_for_chars(items[c_idx], alphanum)
             word = get_full_item(items, c_idx, alphanum)
             tok = check_for_keyword(word) # returns keyword tok if it is a keyword, else just returns identifier tok
-            # checks if the identifier is a type identifier for a string
-            if length(tokens) > 0 && tokens[length(tokens)].type == TYPE_ASSIGN
-                tok.type = STRING
-            end
             push!(tokens, tok) 
             c_idx += length(word)
             continue
