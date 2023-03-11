@@ -133,6 +133,10 @@ function lexer(input::String)::Array{Token}
         if check_for_chars(items[c_idx], alphanum)
             word = get_full_item(items, c_idx, alphanum)
             tok = check_for_keyword(word) # returns keyword tok if it is a keyword, else just returns identifier tok
+            # checks if the identifier is a type identifier for a string
+            if length(tokens) > 0 && tokens[length(tokens)].type == TYPE_ASSIGN
+                tok.type = STRING
+            end
             push!(tokens, tok) 
             c_idx += length(word)
             continue

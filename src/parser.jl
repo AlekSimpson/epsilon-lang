@@ -44,7 +44,7 @@ function expr(state::ParserState)
 
         # this basically is checking if state.curr_tok.type is not equal to any of the data types in the DATA_TYPES array
         vector_check = sum(state.curr_tok.type .== DATA_TYPES)
-        @assert !(vector_check == 0) "token type did not match one of the expected datay types from DATA_TYPES"
+        @assert !(vector_check == 0) "token type did not match one of the expected data types from DATA_TYPES (found $(state.curr_tok.type))"
 
         var_name.type = state.curr_tok.type
 

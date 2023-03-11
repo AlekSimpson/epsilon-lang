@@ -34,7 +34,7 @@
 end
 
 #TODO: Add more of the datatypes lol
-DATA_TYPES = [NUMBER, BOOL]
+DATA_TYPES = [NUMBER, BOOL, STRING]
 
 mutable struct Token
     type::TokenType
