@@ -23,20 +23,39 @@ struct Result
     test_name
 end
 
-
+# runs tests for lexer
 function validate_test(test::LexerTest)::Result
-    result = lexer(test.input)
+    error = nothing
+    result = try
+        lexer(test.input)
+    catch e
+        error = e
+    end
     formatted = []
     for element in result
         push!(formatted, element.value)
     end
-    test_res = formatted == test.correct
+    test_res = formatted == test.correct # checks if the result is correct or not
     return Result(test, test_res, formatted, test.name)
 end
 
+# runs tests for parser
 function validate_test(test::ParserTest)::Result 
-    result = parse(test.input)
-    test_res = result[1].value == test.correct.value
+    # runs tests and catches error if there is one
+    error = nothing
+    result = try 
+        parse(test.input)
+    catch e
+        error = e
+    end
+    # checks to see if result is correct
+    test_res = false
+    if result isa Vector{AbstractNode}
+        test_res = result[1].value == test.correct.value # checks if the result is correct or not
+    else
+        result = [error]
+    end
+
     return Result(test, test_res, result[1], test.name)
 end
 

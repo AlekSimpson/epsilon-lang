@@ -1,4 +1,6 @@
 include("node.jl")
+numbers = "1234567890"
+alphanum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 
 # checks if input is a letter or _
 function check_for_chars(input_char::String, chars::String)::Bool
@@ -12,6 +14,8 @@ function check_for_chars(input_char::String, chars::String)::Bool
 end
 
 # gets full item from first character
+# sel: 1 => to parse numbers
+#    : 2 => to parse alphanumeric numbers
 function get_full_item(items::Array{String}, c_idx::Int, chars::String)
     full_item::String = ""
     while check_for_chars(items[c_idx], chars)
@@ -53,7 +57,7 @@ function check_symbol(input_char::String)::Token
 end
 
 # checks if the given input is a keyword or not
-function check_for_keyword(input::String)::Token
+function check_for_keyword(input::String, c_idx::Int, items)::Token
     keywords = Dict("var" => VAR, 
                     "func" => FUNC, 
                     "if" => IF, 
@@ -68,18 +72,31 @@ function check_for_keyword(input::String)::Token
         return Token(keywords[input], input)
     end
         
-    token_type = check_for_datatype(input)
-    return Token(token_type, input) 
+    token_type = IDENTIFIER
+    data_type  = check_for_datatype(input, c_idx, items)
+    return Token(token_type, data_type, input) 
 end
 
-function check_for_datatype(input::String)::TokenType
+# this function checks if the keyword is also a datatype reference in which case it assigns a data type to it
+function check_for_datatype(input::String, c_idx, items)::Type
     type_dict = Dict("Int"    => NUMBER,
                      "Bool"   => BOOL, 
-                     "String" => STRING)
+                     "String" => STRING,
+                     "Array"  => ARRAY)
     if input in keys(type_dict)
-        return type_dict[input]
+        type = type_dict[input]
+        subtype = NilType()
+        if type == ARRAY
+            # skip '<' so we can immidiately extract the subtype
+            c_idx+=2
+            word = get_full_item(items, c_idx, alphanum)
+            subtype = check_for_datatype(word, c_idx, items)
+            c_idx+=2
+        end
+        return Type(type, subtype)
     end
-    return IDENTIFIER
+
+    return Type(NONE)
 end
 
 # Inputs source code outputs list of tokens
@@ -88,8 +105,6 @@ function lexer(input::String)::Array{Token}
     c_idx::Int = 1
     tokens = Array{Token, 1}()
     push!(items, "EOF")
-    numbers = "1234567890"
-    alphanum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
     scanning_array = false
 
     while true
@@ -117,7 +132,7 @@ function lexer(input::String)::Array{Token}
         # checks for string opening
         if items[c_idx] == "\""
             string = get_full_string(items, c_idx)
-            push!(tokens, Token(STRING, string))
+            push!(tokens, Token(STRING, Type(STRING), string))
             c_idx += length(string) + 2 
             continue
         end
@@ -125,7 +140,8 @@ function lexer(input::String)::Array{Token}
         # check for numbers
         if check_for_chars(items[c_idx], numbers)
             number = get_full_item(items, c_idx, numbers)
-            push!(tokens, Token(NUMBER, number))
+            datatype = Type(NUMBER)
+            push!(tokens, Token(NUMBER, datatype, number))
             c_idx += length(number) 
             continue
         end
@@ -133,7 +149,7 @@ function lexer(input::String)::Array{Token}
         # check for words 
         if check_for_chars(items[c_idx], alphanum)
             word = get_full_item(items, c_idx, alphanum)
-            tok = check_for_keyword(word) # returns keyword tok if it is a keyword, else just returns identifier tok
+            tok = check_for_keyword(word, c_idx, items) # returns keyword tok if it is a keyword, else just returns identifier tok
             push!(tokens, tok) 
             c_idx += length(word)
             continue

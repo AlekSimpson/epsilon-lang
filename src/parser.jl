@@ -43,20 +43,26 @@ function expr(state::ParserState)
         forward!(state)
 
         # this basically is checking if state.curr_tok.type is not equal to any of the data types in the DATA_TYPES array
-        vector_check = sum(state.curr_tok.type .== DATA_TYPES)
+        vector_check = sum(state.curr_tok.datatype.type .== DATA_TYPES)
         @assert !(vector_check == 0) "token type did not match one of the expected data types from DATA_TYPES (found $(state.curr_tok.type))"
 
         var_name.type = state.curr_tok.type
+        var_name.datatype = state.curr_tok.datatype
+
+        if state.curr_tok.datatype.type == ARRAY
+            forward!(state, 3)
+        end
 
         forward!(state)
-        @assert !(state.curr_tok.type != ASSIGN) "token type did not match expected ASSIGN"
+        @assert !(state.curr_tok.type != ASSIGN) "token type did not match expected ASSIGN (found $(state.curr_tok.type))"
         forward!(state)
+        println("CURR TOK IS $(state.curr_tok.type)")
         value = expr(state)
 
         ret_val = VarDecNode(var_name, value)
         @assert ret_val !== nothing "expr(::ParserState) returning nothing!"
         # checks if variable type matches assigned value type
-        @assert !(VDN_has_type_conflict(ret_val)) "COBOLT ERROR: Variable had type conflict"
+        @assert !(VDN_has_type_conflict(ret_val)) "COBOLT ERROR: Variable had type conflict, ($(var_name.datatype.type), $(ret_val.assigned_value.token.datatype.type))"
         return VarDecNode(var_name, value) 
     end
 
@@ -64,7 +70,34 @@ function expr(state::ParserState)
     @assert ret_val !== nothing "arith_expr(::ParserState) returning nothing!"
     return ret_val
 end
+## Specialized Parsing Functions
+# Parses array expressions
+function array_expr(state::ParserState)
+    @assert state.curr_tok.type !== LBRACKET "expected LBRACKET at beginning of array expression (found $(state.curr_tok.type))"
+    elements::Vector{AbstractNode} = []
 
+    forward!(state)
+
+    if state.curr_tok.type == RBRACKET
+        forward!()
+    else
+        while true
+            element = expr(state)
+            push!(elements, element) 
+            forward!(state)
+            if state.curr_tok.type != SPACE
+                break 
+            end
+        end
+    end
+
+    first_el = nothing
+    if length(elements) != 0
+        first_el = elements[1] 
+    end
+end
+
+## General Parsing Functions Start Here
 # first layer, checks for add and sub (unless the expression JUST containts mult and div then it also checks for that)
 function arith_expr(state::ParserState)
     if state.curr_tok.type == NOT
@@ -114,6 +147,8 @@ function atom(state::ParserState)
         return NumberNode(state.curr_tok)
     elseif state.curr_tok.type == BOOL
         return BoolNode(state.curr_tok) 
+    elseif state.curr_tok.type == LBRACKET
+        return array_expr(state)
     elseif state.curr_tok.type == STRING
         return StringNode(state.curr_tok)
     end

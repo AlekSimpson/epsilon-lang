@@ -1,4 +1,5 @@
 @enum TokenType begin 
+    NONE
     VAR 
     FUNC 
     IF 
@@ -31,22 +32,39 @@
     EXPONENT
     COMMENT
     BOOL
+    ARRAY
 end
 
 #TODO: Add more of the datatypes lol
-DATA_TYPES = [NUMBER, BOOL, STRING]
+DATA_TYPES = [NUMBER, BOOL, STRING, ARRAY]
+
+abstract type AbstractNode end
+abstract type Abstract_Type end
+
+struct NilType <: Abstract_Type
+    type::TokenType
+    NilType() = new(NONE)
+end
+
+mutable struct Type <: Abstract_Type
+    type::TokenType 
+    subtype::Abstract_Type
+
+    Type(t::TokenType) = new(t, NilType())
+    Type(t::TokenType, st::Abstract_Type) = new(t, st)
+end
 
 mutable struct Token
     type::TokenType
-    value::String # changed this from Any to String
+    datatype::Type
+    value::String
     row::Int
     col::Int
 
-    Token(type::TokenType, value::String) = new(type, value, 0, 0)
+    Token(type::TokenType, value::String) = new(type, Type(NONE), value, 0, 0)
+    Token(type::TokenType, dt::Type, value::String) = new(type, dt, value, 0, 0)
 end
-    
-abstract type AbstractNode end
-        
+
 struct BinOpNode <: AbstractNode
     left::AbstractNode
     op::Token
@@ -70,13 +88,10 @@ struct VarDecNode <: AbstractNode
     assigned_value::AbstractNode
     value::String
 
-    function VarDecNode(token::Token, assigned_value::AbstractNode)
-        value = token.value * "::" * string(token.type) * " = " * assigned_value.value
-        new(token, assigned_value, value)
-    end
+    VarDecNode(token::Token, assigned_value::AbstractNode) = new(token, assigned_value, "$(token.value)::$(token.datatype.type) = $(assigned_value.value)")
 end
 
-VDN_has_type_conflict(node::VarDecNode)::Bool = node.token.type != node.assigned_value.token.type
+VDN_has_type_conflict(node::VarDecNode)::Bool = node.token.datatype.type != node.assigned_value.token.datatype.type
 
 struct UnaryNode <: AbstractNode
     token::Token 
@@ -91,6 +106,15 @@ struct BoolNode <: AbstractNode
     value::String
 
     BoolNode(token::Token) = new(token, token.value)
+end
+
+struct ArrayNode <: AbstractNode
+    token::Token 
+    element_type::TokenType
+    elements::Array{AbstractNode}
+    value::String 
+
+    ArrayNode(token::Token, el_type::TokenType, elements::Array{AbstractNode}) = new(token, el_type, elements, "$(element_type)[$(length(elements))]")
 end
 
 struct StringNode <: AbstractNode
