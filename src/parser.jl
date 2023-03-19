@@ -171,8 +171,6 @@ function atom(state::ParserState)
         return expr(state)
     elseif state.curr_tok.type == LBRACKET
         return array_expr(state)
-    elseif state.curr_tok.type == STRING
-        return StringNode(state.curr_tok)
     else
         AtomNode(state.curr_tok)
     end

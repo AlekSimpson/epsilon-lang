@@ -87,9 +87,9 @@ unary_test = ParserTest("Unary Node",
 
 string_test = ParserTest("Strings",
                          [Token(VAR, "var"), Token(IDENTIFIER, Type(STRING), "test"), Token(TYPE_ASSIGN, "::"), Token(STRING, Type(STRING), "String"), Token(ASSIGN, "="), Token(STRING, Type(STRING), "test")], 
-                         VarDecNode(Token(STRING, Type(STRING), "test"), StringNode(Token(STRING, Type(STRING), "test"))))
+                         VarDecNode(Token(STRING, Type(STRING), "test"), AtomNode(Token(STRING, Type(STRING), "test"))))
 
-test_elements::Vector{AbstractNode} = [StringNode(Token(STRING, Type(STRING, NilType()), "test"))]
+test_elements::Vector{AbstractNode} = [AtomNode(Token(STRING, Type(STRING, NilType()), "test"))]
 array_str_test = ParserTest("Array of Strings Test",
                             [Token(VAR, Type(NONE, NilType()), "var"), Token(IDENTIFIER, Type(NONE, NilType()), "name"), Token(TYPE_ASSIGN, Type(NONE, NilType()), "::"), Token(IDENTIFIER, Type(ARRAY, Type(NONE, NilType())), "Array"), Token(LCARROT, Type(NONE, NilType()), "<"), Token(IDENTIFIER, Type(STRING, NilType()), "String"), Token(RCARROT, Type(NONE, NilType()), ">"), Token(ASSIGN, Type(NONE, NilType()), "="), Token(LBRACKET, Type(NONE, NilType()), "["), Token(STRING, Type(STRING, NilType()), "test"), Token(RBRACKET, Type(NONE, NilType()), "]")],
                             VarDecNode(Token(IDENTIFIER, Type(ARRAY, Type(STRING, NilType())), "name"), ArrayNode(Token(ARRAY, Type(ARRAY, Type(STRING, NilType())), "test"), Type(ARRAY, Type(STRING, NilType())), test_elements)))
