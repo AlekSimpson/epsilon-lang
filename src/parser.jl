@@ -50,19 +50,19 @@ function expr(state::ParserState)
         var_name.datatype = state.curr_tok.datatype
 
         if state.curr_tok.datatype.type == ARRAY
-            forward!(state, 3)
+            subtype = parse_array_dec_type(state)
+            var_name.datatype = Type(var_name.datatype.type, subtype)
         end
 
         forward!(state)
         @assert !(state.curr_tok.type != ASSIGN) "token type did not match expected ASSIGN (found $(state.curr_tok.type))"
         forward!(state)
-        println("CURR TOK IS $(state.curr_tok.type)")
         value = expr(state)
 
         ret_val = VarDecNode(var_name, value)
         @assert ret_val !== nothing "expr(::ParserState) returning nothing!"
         # checks if variable type matches assigned value type
-        @assert !(VDN_has_type_conflict(ret_val)) "COBOLT ERROR: Variable had type conflict, ($(var_name.datatype.type), $(ret_val.assigned_value.token.datatype.type))"
+        @assert !(VDN_has_type_conflict(ret_val)) "COBOLT ERROR: Variable had type conflict, ($(var_name) | $(ret_val.assigned_value))"
         return VarDecNode(var_name, value) 
     end
 
@@ -70,10 +70,30 @@ function expr(state::ParserState)
     @assert ret_val !== nothing "arith_expr(::ParserState) returning nothing!"
     return ret_val
 end
+
+function parse_array_dec_type(state::ParserState)
+    forward!(state)
+    if state.curr_tok.type != LCARROT
+        @assert false "COBOLT ERROR: expected LCARROT in array dec (found $(state.curr_tok.type))"
+    end
+
+    forward!(state)
+
+    subtype = state.curr_tok.datatype 
+
+    forward!(state)
+
+    if state.curr_tok.type != RCARROT
+        @assert false "COBOLT ERROR: expected RCARROT in array dec (found $(state.curr_tok.type))"
+    end
+
+    return subtype
+end
+
 ## Specialized Parsing Functions
 # Parses array expressions
 function array_expr(state::ParserState)
-    @assert state.curr_tok.type !== LBRACKET "expected LBRACKET at beginning of array expression (found $(state.curr_tok.type))"
+    @assert state.curr_tok.type == LBRACKET "expected LBRACKET at beginning of array expression (found $(state.curr_tok.type))"
     elements::Vector{AbstractNode} = []
 
     forward!(state)
@@ -85,8 +105,10 @@ function array_expr(state::ParserState)
             element = expr(state)
             push!(elements, element) 
             forward!(state)
-            if state.curr_tok.type != SPACE
+            if state.curr_tok.type != SPACE && state.curr_tok.type == RBRACKET
                 break 
+            elseif state.curr_tok.type != SPACE 
+                @assert false "COBOLT EERROR: Expected RBRACKET to end array (found $(state.curr_tok.type))"
             end
         end
     end
@@ -95,6 +117,10 @@ function array_expr(state::ParserState)
     if length(elements) != 0
         first_el = elements[1] 
     end
+    # create token for array so that it correctly reflects the type
+    dt = Type(ARRAY, Type(first_el.token.datatype.type))
+    arr_tok = Token(ARRAY, dt, first_el.token.value)
+    return ArrayNode(arr_tok, dt, elements)
 end
 
 ## General Parsing Functions Start Here

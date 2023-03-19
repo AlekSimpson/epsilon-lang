@@ -91,7 +91,7 @@ struct VarDecNode <: AbstractNode
     VarDecNode(token::Token, assigned_value::AbstractNode) = new(token, assigned_value, "$(token.value)::$(token.datatype.type) = $(assigned_value.value)")
 end
 
-VDN_has_type_conflict(node::VarDecNode)::Bool = node.token.datatype.type != node.assigned_value.token.datatype.type
+VDN_has_type_conflict(node::VarDecNode)::Bool = (node.token.datatype.type != node.assigned_value.token.datatype.type) && (node.token.datatype.subtype != node.assigned_value.token.datatype.subtype)
 
 struct UnaryNode <: AbstractNode
     token::Token 
@@ -110,11 +110,11 @@ end
 
 struct ArrayNode <: AbstractNode
     token::Token 
-    element_type::TokenType
-    elements::Array{AbstractNode}
+    arr_type::Type # type should include both the array type and the element type in the subtype
+    elements::Vector{AbstractNode}
     value::String 
 
-    ArrayNode(token::Token, el_type::TokenType, elements::Array{AbstractNode}) = new(token, el_type, elements, "$(element_type)[$(length(elements))]")
+    ArrayNode(token::Token, arr_type::Type, elements::Vector{AbstractNode}) = new(token, arr_type, elements, "$(arr_type.subtype.type)[$(length(elements))]")
 end
 
 struct StringNode <: AbstractNode
