@@ -75,12 +75,11 @@ struct BinOpNode <: AbstractNode
     BinOpNode(left, op, right) = new(left, op, right, left.token, "$(left.value) $(op.value) $(right.value)")
 end
         
-# Possibly will have to include more in this in the future
-struct NumberNode <: AbstractNode
+struct AtomNode <: AbstractNode
     token::Token
     value::String
 
-    NumberNode(token::Token) = new(token, token.value)
+    AtomNode(token::Token) = new(token, token.value)
 end
 
 struct VarDecNode <: AbstractNode
@@ -101,13 +100,6 @@ struct UnaryNode <: AbstractNode
     UnaryNode(token::Token, node::AbstractNode) = new(token, node, "$(token.value)$(node.value)")
 end
 
-struct BoolNode <: AbstractNode
-    token::Token
-    value::String
-
-    BoolNode(token::Token) = new(token, token.value)
-end
-
 struct ArrayNode <: AbstractNode
     token::Token 
     arr_type::Type # type should include both the array type and the element type in the subtype
@@ -115,11 +107,4 @@ struct ArrayNode <: AbstractNode
     value::String 
 
     ArrayNode(token::Token, arr_type::Type, elements::Vector{AbstractNode}) = new(token, arr_type, elements, "$(arr_type.subtype.type)[$(length(elements))]")
-end
-
-struct StringNode <: AbstractNode
-    token::Token
-    value::String
-
-    StringNode(token::Token) = new(token, token.value)
 end

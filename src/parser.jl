@@ -169,14 +169,12 @@ function atom(state::ParserState)
     if state.curr_tok.type == LPAREN
         forward!(state)
         return expr(state)
-    elseif state.curr_tok.type == NUMBER
-        return NumberNode(state.curr_tok)
-    elseif state.curr_tok.type == BOOL
-        return BoolNode(state.curr_tok) 
     elseif state.curr_tok.type == LBRACKET
         return array_expr(state)
     elseif state.curr_tok.type == STRING
         return StringNode(state.curr_tok)
+    else
+        AtomNode(state.curr_tok)
     end
 end
 
