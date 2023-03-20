@@ -86,8 +86,8 @@ unary_test = ParserTest("Unary Node",
                          UnaryNode(Token(NOT, "!"), AtomNode(Token(BOOL, Type(BOOL), "true"))))
 
 string_test = ParserTest("Strings",
-                         [Token(VAR, "var"), Token(IDENTIFIER, Type(STRING), "test"), Token(TYPE_ASSIGN, "::"), Token(STRING, Type(STRING), "String"), Token(ASSIGN, "="), Token(STRING, Type(STRING), "test")], 
-                         VarDecNode(Token(STRING, Type(STRING), "test"), AtomNode(Token(STRING, Type(STRING), "test"))))
+                         [Token(STRING, Type(STRING), "test")], 
+                         AtomNode(Token(STRING, Type(STRING), "test")))
 
 test_elements::Vector{AbstractNode} = [AtomNode(Token(STRING, Type(STRING, NilType()), "test"))]
 array_str_test = ParserTest("Array of Strings Test",

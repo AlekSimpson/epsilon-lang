@@ -33,6 +33,8 @@
     COMMENT
     BOOL
     ARRAY
+    NEWLINE
+    ELSE
 end
 
 #TODO: Add more of the datatypes lol
@@ -107,4 +109,16 @@ struct ArrayNode <: AbstractNode
     value::String 
 
     ArrayNode(token::Token, arr_type::Type, elements::Vector{AbstractNode}) = new(token, arr_type, elements, "$(arr_type.subtype.type)[$(length(elements))]")
+end
+
+struct IfNode <: AbstractNode
+    token::Token
+    conditions::Vector{AbstractNode}
+    # each code block is its own list of statements 
+    code_blocks::Vector{Vector{AbstractNode}}
+    else_block::Vector{AbstractNode}
+    value::String
+
+    IfNode(tok::Token, conditions::Vector{AbstractNode}, code_blocks::Vector{Vector{AbstractNode}}) = new(tok, conditions, code_blocks, [], "if node")
+    IfNode(tok::Token, conditions::Vector{AbstractNode}, code_blocks::Vector{Vector{AbstractNode}}, else_block::Vector{AbstractNode}) = new(tok, conditions, code_blocks, else_block, "if node")
 end

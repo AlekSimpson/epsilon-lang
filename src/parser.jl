@@ -31,6 +31,38 @@ end
 
 # this function starts the expression check and from the entire grammar tree is checked
 function expr(state::ParserState)
+    ret_val = parse_var_dec(state)
+    if ret_val !== nothing
+        return ret_val
+    end
+
+    ret_val = arith_expr(state)
+    @assert ret_val !== nothing "arith_expr(::ParserState) returning nothing!"
+    return ret_val
+end
+
+## Specialized Parsing Functions
+# Parses array expressions
+function parse_array_dec_type(state::ParserState)
+    forward!(state)
+    if state.curr_tok.type != LCARROT
+        @assert false "COBOLT ERROR: expected LCARROT in array dec (found $(state.curr_tok.type))"
+    end
+
+    forward!(state)
+
+    subtype = state.curr_tok.datatype 
+
+    forward!(state)
+
+    if state.curr_tok.type != RCARROT
+        @assert false "COBOLT ERROR: expected RCARROT in array dec (found $(state.curr_tok.type))"
+    end
+
+    return subtype
+end
+
+function parse_var_dec(state::ParserState)
     if state.curr_tok.type == VAR 
         forward!(state)
         @assert state.curr_tok.type == IDENTIFIER "token type did not match expected IDENTIFIER"
@@ -65,33 +97,8 @@ function expr(state::ParserState)
         @assert !(VDN_has_type_conflict(ret_val)) "COBOLT ERROR: Variable had type conflict, ($(var_name) | $(ret_val.assigned_value))"
         return VarDecNode(var_name, value) 
     end
-
-    ret_val = arith_expr(state)
-    @assert ret_val !== nothing "arith_expr(::ParserState) returning nothing!"
-    return ret_val
 end
 
-function parse_array_dec_type(state::ParserState)
-    forward!(state)
-    if state.curr_tok.type != LCARROT
-        @assert false "COBOLT ERROR: expected LCARROT in array dec (found $(state.curr_tok.type))"
-    end
-
-    forward!(state)
-
-    subtype = state.curr_tok.datatype 
-
-    forward!(state)
-
-    if state.curr_tok.type != RCARROT
-        @assert false "COBOLT ERROR: expected RCARROT in array dec (found $(state.curr_tok.type))"
-    end
-
-    return subtype
-end
-
-## Specialized Parsing Functions
-# Parses array expressions
 function array_expr(state::ParserState)
     @assert state.curr_tok.type == LBRACKET "expected LBRACKET at beginning of array expression (found $(state.curr_tok.type))"
     elements::Vector{AbstractNode} = []
@@ -121,6 +128,61 @@ function array_expr(state::ParserState)
     dt = Type(ARRAY, Type(first_el.token.datatype.type))
     arr_tok = Token(ARRAY, dt, first_el.token.value)
     return ArrayNode(arr_tok, dt, elements)
+end
+
+function parse_conditional_statement(state::ParserState)
+    tok = state.curr_tok
+    conditions = []
+    blocks = []
+
+    # parses all conditional blocks
+    while state.curr_tok.type != END || state.curr_tok.type != ELSE
+        condition, block = parse_if_block(state)
+        push!(conditions, condition)
+        push!(blocks, blocks)
+    end
+
+    # gets else block if it exists
+    if state.curr_tok.type == ELSE
+        forward!(state)
+        else_block = expr(state)
+        return IfNode(tok, conditions, blocks, else_block)
+    end
+
+    return IfNode(tok, conditions, blocks)
+end
+
+# parses the condition and the block of the conditional
+function parse_if_block(state::ParserState)
+    # no need to check for IF token, the only way this funciton is called is if the IF token is alreay detected
+    println("TEST: $(state.curr_tok.type != IF)")
+    println("------ $(state.curr_tok)")
+    if state.curr_tok.type != ELIF && state.curr_tok.type != IF
+        return [] # RETURN ERROR
+    end
+    println("getting past")
+    forward!(state)
+    condition = expr(state)
+    forward!(state)
+    block = get_all_statements(state)
+    forward!(state)
+    return [condition, block]
+end
+
+# gets all lines inside of a code block
+function get_all_statements(state::ParserState)
+    statements::Vector{AbstractNode} = []
+    while state.curr_tok.type == NEWLINE
+        forward!(state)
+        # checks if code block has ended
+        if state.curr_tok.type == END || state.curr_tok.type == ELIF || state.curr_tok.type == ELSE
+            break
+        end
+        statement = expr(state)
+        push!(statements, statement)
+        forward!(state)
+    end
+    return statements
 end
 
 ## General Parsing Functions Start Here
@@ -166,13 +228,21 @@ end
 
 # the last layers checks for the most basic building blocks of an expression which are opening parenthese and numbers (for now)
 function atom(state::ParserState)
+    # atom_types = [STRING, NUMBER, BOOL]
+    # vector_check = sum(state.curr_tok.type .== atom_types) == 1
     if state.curr_tok.type == LPAREN
         forward!(state)
         return expr(state)
     elseif state.curr_tok.type == LBRACKET
         return array_expr(state)
-    else
-        AtomNode(state.curr_tok)
+    elseif state.curr_tok.type == IF 
+        return parse_conditional_statement(state) 
+    elseif state.curr_tok.type == STRING 
+        return AtomNode(state.curr_tok)
+    elseif state.curr_tok.type == NUMBER
+        return AtomNode(state.curr_tok)
+    elseif state.curr_tok.type == BOOL
+        return AtomNode(state.curr_tok)
     end
 end
 

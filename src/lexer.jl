@@ -52,7 +52,8 @@ function check_symbol(input_char::String)::Token
                      "=" => ASSIGN,
                      "!" => NOT,
                      ":" => RANGE,
-                     "^" => EXPONENT)
+                     "^" => EXPONENT,
+                     "\n" => NEWLINE)
     return Token(char_dict[input_char], input_char)
 end
 
@@ -114,7 +115,7 @@ function lexer(input::String)::Array{Token}
         end
 
         # skips over tabs and newlines
-        if items[c_idx] == "\n" || items[c_idx] == "\t"
+        if items[c_idx] == "\t"
             c_idx+=1
             continue
         end

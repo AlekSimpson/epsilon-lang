@@ -1,7 +1,7 @@
 include("../Validator.jl")
 
 full_program = LexerTest("Full Program Test", "func main(param::String)::Void\n\tvar name::Int = 45\nend",
-                    ["func", "main", "(", "param", "::", "String", ")", "::", "Void", "var", "name", "::", "Int", "=", "45", "end"])
+                    ["func", "main", "(", "param", "::", "String", ")", "::", "Void", "\n", "var", "name", "::", "Int", "=", "45", "\n", "end"])
 
 variable_test = LexerTest("Variable Test", "var name::String = \"test string\"",
                      ["var", "name", "::", "String", "=", "test string"])
