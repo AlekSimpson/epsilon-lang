@@ -122,3 +122,12 @@ struct IfNode <: AbstractNode
     IfNode(tok::Token, conditions::Vector{AbstractNode}, code_blocks::Vector{Vector{AbstractNode}}) = new(tok, conditions, code_blocks, [], "if node")
     IfNode(tok::Token, conditions::Vector{AbstractNode}, code_blocks::Vector{Vector{AbstractNode}}, else_block::Vector{AbstractNode}) = new(tok, conditions, code_blocks, else_block, "if node")
 end
+
+struct WhileNode <: AbstractNode
+    token::Token
+    condition::AbstractNode
+    statements::Vector{AbstractNode}
+    value::String
+
+    WhileNode(tok::Token, conditions::AbstractNode, statements::Vector{AbstractNode}) = new(tok, conditions, statements, "while node")
+end

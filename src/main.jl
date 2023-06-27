@@ -4,16 +4,27 @@ include("parser.jl")
 # test = "var name::Array<String> = [\"test\"]"
 # test = "var test::Int = 5 + 5" 
 # test = "var test::String = \"test\""
-test = "if 1 == 1\n\tvar test::Int = 5\nend"
-tokens = lexer(test)
-println(tokens)
-println("-------------------------")
 
-function display(node)
-    println(node.left)
-    println(node.op)
-    println(node.right)
+
+#=
+
+if 1 == 1
+    var test::Int = 5
 end
 
+=#
+
+test_code_sample = "while 1 == 1\nvar test::Int = 5\nend"
+tokens = lexer(test_code_sample)
+display(tokens)
+println("--------------------")
+
 ast = parse(tokens)
-println(ast[1])
+
+function display_ast(ast)
+    for node in ast
+        println(node)
+    end
+end
+
+display_ast(ast)

@@ -91,14 +91,99 @@ string_test = ParserTest("Strings",
 
 test_elements::Vector{AbstractNode} = [AtomNode(Token(STRING, Type(STRING, NilType()), "test"))]
 array_str_test = ParserTest("Array of Strings Test",
-                            [Token(VAR, Type(NONE, NilType()), "var"), Token(IDENTIFIER, Type(NONE, NilType()), "name"), Token(TYPE_ASSIGN, Type(NONE, NilType()), "::"), Token(IDENTIFIER, Type(ARRAY, Type(NONE, NilType())), "Array"), Token(LCARROT, Type(NONE, NilType()), "<"), Token(IDENTIFIER, Type(STRING, NilType()), "String"), Token(RCARROT, Type(NONE, NilType()), ">"), Token(ASSIGN, Type(NONE, NilType()), "="), Token(LBRACKET, Type(NONE, NilType()), "["), Token(STRING, Type(STRING, NilType()), "test"), Token(RBRACKET, Type(NONE, NilType()), "]")],
+                            [Token(VAR, Type(NONE, NilType()), "var"),
+                             Token(IDENTIFIER, Type(NONE, NilType()), "name"),
+                             Token(TYPE_ASSIGN, Type(NONE, NilType()), "::"),
+                             Token(IDENTIFIER, Type(ARRAY, Type(NONE, NilType())), "Array"),
+                             Token(LCARROT, Type(NONE, NilType()), "<"),
+                             Token(IDENTIFIER, Type(STRING, NilType()), "String"),
+                             Token(RCARROT, Type(NONE, NilType()), ">"),
+                             Token(ASSIGN, Type(NONE, NilType()), "="),
+                             Token(LBRACKET, Type(NONE, NilType()), "["),
+                             Token(STRING, Type(STRING, NilType()), "test"),
+                             Token(RBRACKET, Type(NONE, NilType()), "]")],
                             VarDecNode(Token(IDENTIFIER, Type(ARRAY, Type(STRING, NilType())), "name"), ArrayNode(Token(ARRAY, Type(ARRAY, Type(STRING, NilType())), "test"), Type(ARRAY, Type(STRING, NilType())), test_elements)))
 
 test_elements = [AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "1"))]
 array_int_test = ParserTest("Array of Ints Test",
-                            [Token(VAR, Type(NONE, NilType()), "var"), Token(IDENTIFIER, Type(NONE, NilType()), "name"), Token(TYPE_ASSIGN, Type(NONE, NilType()), "::"), Token(IDENTIFIER, Type(ARRAY, Type(NONE, NilType())), "Array"), Token(LCARROT, Type(NONE, NilType()), "<"), Token(IDENTIFIER, Type(NUMBER, NilType()), "Int"), Token(RCARROT, Type(NONE, NilType()), ">"), Token(ASSIGN, Type(NONE, NilType()), "="), Token(LBRACKET, Type(NONE, NilType()), "["), Token(NUMBER, Type(NUMBER, NilType()), "1"), Token(RBRACKET, Type(NONE, NilType()), "]")],
+                            [Token(VAR, Type(NONE, NilType()), "var"),
+                             Token(IDENTIFIER, Type(NONE, NilType()), "name"),
+                             Token(TYPE_ASSIGN, Type(NONE, NilType()), "::"),
+                             Token(IDENTIFIER, Type(ARRAY, Type(NONE, NilType())), "Array"),
+                             Token(LCARROT, Type(NONE, NilType()), "<"),
+                             Token(IDENTIFIER, Type(NUMBER, NilType()), "Int"),
+                             Token(RCARROT, Type(NONE, NilType()), ">"),
+                             Token(ASSIGN, Type(NONE, NilType()), "="),
+                             Token(LBRACKET, Type(NONE, NilType()), "["),
+                             Token(NUMBER, Type(NUMBER, NilType()), "1"),
+                             Token(RBRACKET, Type(NONE, NilType()), "]")],
                             VarDecNode(Token(IDENTIFIER, Type(ARRAY, Type(NUMBER, NilType())), "name"), ArrayNode(Token(ARRAY, Type(ARRAY, Type(NUMBER, NilType())), "test"), Type(ARRAY, Type(NUMBER, NilType())), test_elements)))
 
+conditional_test = ParserTest(
+    "Conditional with Statements",
+    [Token(IF, Type(NONE, NilType()), "if")
+     Token(NUMBER, Type(NUMBER, NilType()), "1")
+     Token(EQUALITY, Type(NONE, NilType()), "==")
+     Token(NUMBER, Type(NUMBER, NilType()), "1")
+     Token(NEWLINE, Type(NONE, NilType()), "\n")
+     Token(VAR, Type(NONE, NilType()), "var")
+     Token(IDENTIFIER, Type(NONE, NilType()), "test")
+     Token(TYPE_ASSIGN, Type(NONE, NilType()), "::")
+     Token(IDENTIFIER, Type(NUMBER, NilType()), "Int")
+     Token(ASSIGN, Type(NONE, NilType()), "=")
+     Token(NUMBER, Type(NUMBER, NilType()), "5")
+     Token(NEWLINE, Type(NONE, NilType()), "\n")
+     Token(VAR, Type(NONE, NilType()), "var")
+     Token(IDENTIFIER, Type(NONE, NilType()), "other")
+     Token(TYPE_ASSIGN, Type(NONE, NilType()), "::")
+     Token(IDENTIFIER, Type(NUMBER, NilType()), "Int")
+     Token(ASSIGN, Type(NONE, NilType()), "=")
+     Token(NUMBER, Type(NUMBER, NilType()), "10")
+     Token(NEWLINE, Type(NONE, NilType()), "\n")
+     Token(END, Type(NONE, NilType()), "end")],
+    IfNode(
+        Token(IF, Type(NONE, NilType()), "if"),
+        AbstractNode[BinOpNode(AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "1")), Token(EQUALITY, Type(NONE, NilType()), "=="), AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "1")))],
+        Vector{AbstractNode}[[VarDecNode(Token(IDENTIFIER, Type(NUMBER, NilType()), "test"), AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "5"))), VarDecNode(Token(IDENTIFIER, Type(NUMBER, NilType()), "other"), AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "10")))]],
+    )
+)
+
+while_loop_test = ParserTest(
+   "While loop test",
+   [Token(WHILE, Type(NONE, NilType()), "while")
+    Token(NUMBER, Type(NUMBER, NilType()), "1")
+    Token(EQUALITY, Type(NONE, NilType()), "==")
+    Token(NUMBER, Type(NUMBER, NilType()), "1")
+    Token(NEWLINE, Type(NONE, NilType()), "\n")
+    Token(VAR, Type(NONE, NilType()), "var")
+    Token(IDENTIFIER, Type(NONE, NilType()), "test")
+    Token(TYPE_ASSIGN, Type(NONE, NilType()), "::")
+    Token(IDENTIFIER, Type(NUMBER, NilType()), "Int")
+    Token(ASSIGN, Type(NONE, NilType()), "=")
+    Token(NUMBER, Type(NUMBER, NilType()), "5")
+    Token(NEWLINE, Type(NONE, NilType()), "\n")
+    Token(END, Type(NONE, NilType()), "end")],
+   WhileNode(
+       Token(WHILE, Type(NONE, NilType()), "while"),
+       BinOpNode(AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "1"), "1"), Token(EQUALITY, Type(NONE, NilType()), "=="), AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "1"), "1"), Token(NUMBER, Type(NUMBER, NilType()), "1"), "1 == 1"),
+       AbstractNode[VarDecNode(Token(IDENTIFIER, Type(NUMBER, NilType()), "test"), AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "5"), "5"), "test::NUMBER = 5")],
+       "while node"
+   )
+)
 
 
-parser_tests = [add_op, sub_op, mult_op, div_op, two_diff_ops, exp_op, var_dec, bool_true, bool_false, unary_test, string_test, array_str_test, array_int_test]
+parser_tests = [
+    add_op,
+    sub_op,
+    mult_op,
+    div_op,
+    two_diff_ops,
+    exp_op, var_dec,
+    bool_true,
+    bool_false,
+    unary_test,
+    string_test,
+    array_str_test,
+    array_int_test,
+    conditional_test
+]

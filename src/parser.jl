@@ -15,8 +15,13 @@ function peek_ahead(state::ParserState)
 end
 
 function forward!(state::ParserState, amount=1)
+    verbose = false
+    temp = state.idx
     if state.idx + amount <= length(state.tokens)
         state.idx += amount 
+    end
+    if verbose
+        println("from idx ($(temp)), to idx ($(state.idx))")
     end
     state.curr_tok = state.tokens[state.idx]
 end
@@ -132,14 +137,18 @@ end
 
 function parse_conditional_statement(state::ParserState)
     tok = state.curr_tok
-    conditions = []
-    blocks = []
+    conditions::Vector{AbstractNode} = []
+    blocks::Vector{Vector{AbstractNode}} = []
 
     # parses all conditional blocks
-    while state.curr_tok.type != END || state.curr_tok.type != ELSE
+    while true
+        if state.curr_tok.type == END || state.curr_tok.type == ELSE
+            break
+        end
         condition, block = parse_if_block(state)
+
         push!(conditions, condition)
-        push!(blocks, blocks)
+        push!(blocks, block)
     end
 
     # gets else block if it exists
@@ -155,23 +164,35 @@ end
 # parses the condition and the block of the conditional
 function parse_if_block(state::ParserState)
     # no need to check for IF token, the only way this funciton is called is if the IF token is alreay detected
-    println("TEST: $(state.curr_tok.type != IF)")
-    println("------ $(state.curr_tok)")
     if state.curr_tok.type != ELIF && state.curr_tok.type != IF
         return [] # RETURN ERROR
     end
-    println("getting past")
     forward!(state)
     condition = expr(state)
     forward!(state)
-    block = get_all_statements(state)
+    block::Vector{AbstractNode} = get_all_statements(state)
     forward!(state)
-    return [condition, block]
+
+    ret_val = [condition, block]
+
+    return ret_val
+end
+
+# parses while node
+function parse_while_node(state::ParserState)
+    token = state.curr_tok
+    forward!(state)
+
+    condition = expr(state)
+    forward!(state)
+    block::Vector{AbstractNode} = get_all_statements(state)
+    forward!(state)
+    return WhileNode(token, condition, block)
 end
 
 # gets all lines inside of a code block
 function get_all_statements(state::ParserState)
-    statements::Vector{AbstractNode} = []
+    statements = []
     while state.curr_tok.type == NEWLINE
         forward!(state)
         # checks if code block has ended
@@ -182,6 +203,7 @@ function get_all_statements(state::ParserState)
         push!(statements, statement)
         forward!(state)
     end
+
     return statements
 end
 
@@ -197,7 +219,7 @@ function arith_expr(state::ParserState)
 
     left = term(state)
 
-    bin_op_return = bin_op(state, arith_expr, [ADD, SUB, MULT, DIV]) 
+    bin_op_return = bin_op(state, arith_expr, [ADD, SUB, MULT, DIV, EQUALITY])
     if bin_op_return != 0
         return BinOpNode(left, bin_op_return[1], bin_op_return[2])
     end
@@ -243,6 +265,8 @@ function atom(state::ParserState)
         return AtomNode(state.curr_tok)
     elseif state.curr_tok.type == BOOL
         return AtomNode(state.curr_tok)
+    elseif state.curr_tok.type == WHILE
+        return parse_while_node(state)
     end
 end
 
