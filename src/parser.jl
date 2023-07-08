@@ -5,6 +5,7 @@ mutable struct ParserState
     idx::Int
     curr_tok::Token
     nodes::Vector{AbstractNode}
+    ParserState(toks::Vector{Token}, idx::Int, curr_tok::Token) = new(toks, idx, curr_tok, [])
 end
 
 function peek_ahead(state::ParserState)
@@ -12,6 +13,15 @@ function peek_ahead(state::ParserState)
         return state.curr_tok
     end
     return state.tokens[state.idx + 1]
+end
+
+# throws error and ends parser execution
+function throw_error(state::ParserState, error_tok::Token, error_message::String="", verbose::Bool=true)::ErrorNode
+    state.idx = length(state.tokens)
+    if verbose
+        printstyled("ERROR: At line $(error_tok.row), col $(error_tok.col):\n$(error_message)\n"; color=:red, blink=true)
+    end
+    return ErrorNode(error_tok, error_message)
 end
 
 function forward!(state::ParserState, amount=1)
@@ -27,7 +37,7 @@ function forward!(state::ParserState, amount=1)
 end
 
 function parse(tokens::Vector{Token})::Vector{AbstractNode}
-    state::ParserState = ParserState(tokens, 1, tokens[1], [])
+    state::ParserState = ParserState(tokens, 1, tokens[1])
     node = expr(state)
     state.nodes = [node]
 
@@ -165,7 +175,7 @@ end
 function parse_if_block(state::ParserState)
     # no need to check for IF token, the only way this funciton is called is if the IF token is alreay detected
     if state.curr_tok.type != ELIF && state.curr_tok.type != IF
-        return [] # RETURN ERROR
+        return throw_error(state, state.curr_tok, "Expected token ELIF or IF instead found $(state.curr_tok.type)")
     end
     forward!(state)
     condition = expr(state)
@@ -188,6 +198,28 @@ function parse_while_node(state::ParserState)
     block::Vector{AbstractNode} = get_all_statements(state)
     forward!(state)
     return WhileNode(token, condition, block)
+end
+
+function parse_for_node(state::ParserState)
+    token = state.curr_tok
+    forward!(state)
+
+    number = AtomNode(Token(VAR, ""))
+    var_dec = VarDecNode(state.curr_tok, number)
+    forward!(state) # forward to the `in` keyword
+
+    if state.curr_tok.type != IN
+        return throw_error(state, state.curr_tok, "Expected to find IN token while parsing for node, instead found $(state.curr_tok.type)")
+    end
+    forward!(state) # forward past the `in` keyword
+
+    range = expr(state)
+    number.token.value = range.left.value
+
+    block::Vector{AbstractNode} = get_all_statements(state)
+    forward!(state)
+
+    return ForNode(token, var_dec, range, block)
 end
 
 # gets all lines inside of a code block
@@ -241,7 +273,7 @@ end
 function power(state::ParserState)
     left = atom(state)
 
-    bin_op_return = bin_op(state, power, [EXPONENT])
+    bin_op_return = bin_op(state, power, [EXPONENT, RANGE])
     if bin_op_return != 0
         return BinOpNode(left, bin_op_return[1], bin_op_return[2])
     end
@@ -267,6 +299,8 @@ function atom(state::ParserState)
         return AtomNode(state.curr_tok)
     elseif state.curr_tok.type == WHILE
         return parse_while_node(state)
+    elseif state.curr_tok.type == FOR
+        return parse_for_node(state)
     end
 end
 

@@ -165,12 +165,29 @@ while_loop_test = ParserTest(
     Token(END, Type(NONE, NilType()), "end")],
    WhileNode(
        Token(WHILE, Type(NONE, NilType()), "while"),
-       BinOpNode(AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "1"), "1"), Token(EQUALITY, Type(NONE, NilType()), "=="), AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "1"), "1"), Token(NUMBER, Type(NUMBER, NilType()), "1"), "1 == 1"),
-       AbstractNode[VarDecNode(Token(IDENTIFIER, Type(NUMBER, NilType()), "test"), AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "5"), "5"), "test::NUMBER = 5")],
-       "while node"
+       BinOpNode(AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "1")), Token(EQUALITY, Type(NONE, NilType()), "=="), AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "1"))),
+       AbstractNode[VarDecNode(Token(IDENTIFIER, Type(NUMBER, NilType()), "test"), AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "5")))]
    )
 )
 
+for_loop_test = ParserTest(
+    "For loop test",
+    [],
+    ForNode(Token(FOR, Type(NONE, NilType(NONE)), "for", 0, 0), VarDecNode(Token(FOR, Type(NONE, NilType(NONE)), "for", 0, 0), AtomNode(Token(VAR, Type(NONE, NilType(NONE)), "1", 0, 0), ""), "for::NONE = "), BinOpNode(AtomNode(Token(NUMBER, Type(NUMBER, NilType(NONE)), "1", 0, 0), "1"), Token(RANGE, Type(NONE, NilType(NONE)), ":", 0, 0), AtomNode(Token(NUMBER, Type(NUMBER, NilType(NONE)), "3", 0, 0), "3"), Token(NUMBER, Type(NUMBER, NilType(NONE)), "1", 0, 0), "1 : 3"), AbstractNode[], "for node")
+)
+
+ForNode(
+    Token(FOR, Type(NONE, NilType(NONE)), "for", 0, 0),
+    VarDecNode(Token(IDENTIFIER, Type(NONE, NilType(NONE)), "i", 0, 0), AtomNode(Token(VAR, Type(NONE, NilType(NONE)), "1", 0, 0), ""), "i::NONE = "),
+    BinOpNode(
+        AtomNode(Token(NUMBER, Type(NUMBER, NilType(NONE)), "1", 0, 0), "1"),
+        Token(RANGE, Type(NONE, NilType(NONE)), ":", 0, 0),
+        AtomNode(Token(NUMBER, Type(NUMBER, NilType(NONE)), "3", 0, 0), "3"),
+        Token(NUMBER, Type(NUMBER, NilType(NONE)), "1", 0, 0), "1 : 3"
+    ),
+    AbstractNode[],
+    "for node"
+)
 
 parser_tests = [
     add_op,
@@ -185,5 +202,6 @@ parser_tests = [
     string_test,
     array_str_test,
     array_int_test,
-    conditional_test
+    conditional_test,
+    while_loop_test
 ]

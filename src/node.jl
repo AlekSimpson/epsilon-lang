@@ -131,3 +131,21 @@ struct WhileNode <: AbstractNode
 
     WhileNode(tok::Token, conditions::AbstractNode, statements::Vector{AbstractNode}) = new(tok, conditions, statements, "while node")
 end
+
+struct ForNode <: AbstractNode
+    token::Token
+    variable::VarDecNode
+    range::BinOpNode
+    block::Vector{AbstractNode}
+    value::String
+
+    ForNode(tok::Token, variable::VarDecNode, range::BinOpNode, block::Vector{AbstractNode})                = new(tok, variable, range, block, "for node")
+    ForNode(tok::Token, variable::VarDecNode, range::BinOpNode, block::Vector{AbstractNode}, value::String) = new(tok, variable, range, block, value)
+end
+
+struct ErrorNode <: AbstractNode
+    token::Token
+    value::String
+    ErrorNode(tok::Token) = new(tok, "ERROR")
+    ErrorNode(tok::Token, value::String) = new(tok, value)
+end
