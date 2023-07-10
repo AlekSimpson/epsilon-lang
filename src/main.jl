@@ -5,17 +5,20 @@ include("parser.jl")
 # test = "var test::Int = 5 + 5" 
 # test = "var test::String = \"test\""
 
-test_code_sample = "for i inn 1:3\nvar test::Int = i + 5\nend"
+test_code_sample = "for i in 1:3\nvar test::Int = i + 5\nend"
 tokens = lexer(test_code_sample)
-display(tokens)
-println("--------------------")
-
 ast = parse(tokens)
 
-function display_ast(ast)
-    for node in ast
-        println(node)
+function display_ast(ast, debug)
+    if debug
+        display(tokens)
+        println("--------------------")
+        dump(ast[1])
+    else
+        println("--------------------")
+        println(ast[1])
     end
 end
 
-display_ast(ast)
+display_ast(ast, true)
+

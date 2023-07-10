@@ -65,9 +65,7 @@ function parse_array_dec_type(state::ParserState)
     end
 
     forward!(state)
-
     subtype = state.curr_tok.datatype 
-
     forward!(state)
 
     if state.curr_tok.type != RCARROT
@@ -204,7 +202,8 @@ function parse_for_node(state::ParserState)
     token = state.curr_tok
     forward!(state)
 
-    number = AtomNode(Token(VAR, ""))
+    state.curr_tok.datatype = Type(NUMBER)
+    number = AtomNode(Token(VAR, Type(NUMBER), "Int"))
     var_dec = VarDecNode(state.curr_tok, number)
     forward!(state) # forward to the `in` keyword
 
@@ -214,8 +213,10 @@ function parse_for_node(state::ParserState)
     forward!(state) # forward past the `in` keyword
 
     range = expr(state)
-    number.token.value = range.left.value
+    var_dec.assigned_value.token.value = range.left.value
+    var_dec.assigned_value.token.type = range.left.token.type
 
+    forward!(state)
     block::Vector{AbstractNode} = get_all_statements(state)
     forward!(state)
 
@@ -301,6 +302,8 @@ function atom(state::ParserState)
         return parse_while_node(state)
     elseif state.curr_tok.type == FOR
         return parse_for_node(state)
+    elseif state.curr_tok.type == IDENTIFIER
+        return VarAccessNode(state.curr_tok)
     end
 end
 

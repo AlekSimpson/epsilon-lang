@@ -172,21 +172,45 @@ while_loop_test = ParserTest(
 
 for_loop_test = ParserTest(
     "For loop test",
-    [],
-    ForNode(Token(FOR, Type(NONE, NilType(NONE)), "for", 0, 0), VarDecNode(Token(FOR, Type(NONE, NilType(NONE)), "for", 0, 0), AtomNode(Token(VAR, Type(NONE, NilType(NONE)), "1", 0, 0), ""), "for::NONE = "), BinOpNode(AtomNode(Token(NUMBER, Type(NUMBER, NilType(NONE)), "1", 0, 0), "1"), Token(RANGE, Type(NONE, NilType(NONE)), ":", 0, 0), AtomNode(Token(NUMBER, Type(NUMBER, NilType(NONE)), "3", 0, 0), "3"), Token(NUMBER, Type(NUMBER, NilType(NONE)), "1", 0, 0), "1 : 3"), AbstractNode[], "for node")
-)
-
-ForNode(
-    Token(FOR, Type(NONE, NilType(NONE)), "for", 0, 0),
-    VarDecNode(Token(IDENTIFIER, Type(NONE, NilType(NONE)), "i", 0, 0), AtomNode(Token(VAR, Type(NONE, NilType(NONE)), "1", 0, 0), ""), "i::NONE = "),
-    BinOpNode(
-        AtomNode(Token(NUMBER, Type(NUMBER, NilType(NONE)), "1", 0, 0), "1"),
-        Token(RANGE, Type(NONE, NilType(NONE)), ":", 0, 0),
-        AtomNode(Token(NUMBER, Type(NUMBER, NilType(NONE)), "3", 0, 0), "3"),
-        Token(NUMBER, Type(NUMBER, NilType(NONE)), "1", 0, 0), "1 : 3"
-    ),
-    AbstractNode[],
-    "for node"
+    [Token(FOR, Type(NONE, NilType()), "for")
+     Token(IDENTIFIER, Type(NUMBER, NilType()), "i")
+     Token(IN, Type(NONE, NilType()), "in")
+     Token(NUMBER, Type(NUMBER, NilType()), "1")
+     Token(RANGE, Type(NONE, NilType()), ":")
+     Token(NUMBER, Type(NUMBER, NilType()), "3")
+     Token(NEWLINE, Type(NONE, NilType()), "\n")
+     Token(VAR, Type(NONE, NilType()), "var")
+     Token(IDENTIFIER, Type(NUMBER, NilType()), "test")
+     Token(TYPE_ASSIGN, Type(NONE, NilType()), "::")
+     Token(IDENTIFIER, Type(NUMBER, NilType()), "Int")
+     Token(ASSIGN, Type(NONE, NilType()), "=")
+     Token(IDENTIFIER, Type(NONE, NilType()), "i")
+     Token(ADD, Type(NONE, NilType()), "+")
+     Token(NUMBER, Type(NUMBER, NilType()), "5")
+     Token(NEWLINE, Type(NONE, NilType()), "\n")
+     Token(END, Type(NONE, NilType()), "end")],
+    ForNode(
+        Token(FOR, Type(NONE, NilType()), "for"), 
+        VarDecNode(
+            Token(IDENTIFIER, Type(NUMBER, NilType()), "i"), 
+            AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "NUMBER")), 
+        ), 
+        BinOpNode(
+            AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "1")), 
+            Token(RANGE, Type(NONE, NilType()), ":"), 
+            AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "3"))
+        ), 
+        AbstractNode[
+            VarDecNode(
+                Token(IDENTIFIER, Type(NUMBER, NilType()), "test"), 
+                BinOpNode(
+                    VarAccessNode(Token(IDENTIFIER, Type(NONE, NilType()), "i")), 
+                    Token(ADD, Type(NONE, NilType()), "+"), 
+                    AtomNode(Token(NUMBER, Type(NUMBER, NilType()), "5"))
+                )
+            )
+        ] 
+    )
 )
 
 parser_tests = [
@@ -203,5 +227,6 @@ parser_tests = [
     array_str_test,
     array_int_test,
     conditional_test,
-    while_loop_test
+    while_loop_test,
+    for_loop_test
 ]

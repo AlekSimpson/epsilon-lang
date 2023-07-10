@@ -1,3 +1,5 @@
+using Parameters
+
 @enum TokenType begin 
     NONE
     VAR 
@@ -74,7 +76,7 @@ struct BinOpNode <: AbstractNode
     token::Token
     value::String
 
-    BinOpNode(left, op, right) = new(left, op, right, left.token, "$(left.value) $(op.value) $(right.value)")
+    BinOpNode(left::AbstractNode, op::Token, right::AbstractNode) = new(left, op, right, left.token, "$(left.value) $(op.value) $(right.value)")
 end
         
 struct AtomNode <: AbstractNode
@@ -129,7 +131,7 @@ struct WhileNode <: AbstractNode
     statements::Vector{AbstractNode}
     value::String
 
-    WhileNode(tok::Token, conditions::AbstractNode, statements::Vector{AbstractNode}) = new(tok, conditions, statements, "while node")
+    WhileNode(tok::Token, condition::AbstractNode, statements::Vector{AbstractNode}) = new(tok, condition, statements, "while node")
 end
 
 struct ForNode <: AbstractNode
@@ -139,13 +141,19 @@ struct ForNode <: AbstractNode
     block::Vector{AbstractNode}
     value::String
 
-    ForNode(tok::Token, variable::VarDecNode, range::BinOpNode, block::Vector{AbstractNode})                = new(tok, variable, range, block, "for node")
+    ForNode(tok::Token, variable::VarDecNode, range::BinOpNode, block::Vector{AbstractNode}) = new(tok, variable, range, block, "for node")
     ForNode(tok::Token, variable::VarDecNode, range::BinOpNode, block::Vector{AbstractNode}, value::String) = new(tok, variable, range, block, value)
 end
 
 struct ErrorNode <: AbstractNode
     token::Token
     value::String
-    ErrorNode(tok::Token) = new(tok, "ERROR")
-    ErrorNode(tok::Token, value::String) = new(tok, value)
+    ErrorNode(tok::Token) = new(tok, "ERROR NODE")
+    ErrorNode(tok::Token, value::String) = new(tok, "ERROR NODE: $(value)")
+end
+
+struct VarAccessNode <: AbstractNode
+    token::Token
+    value::String
+    VarAccessNode(tok::Token) = new(tok, tok.value)
 end
