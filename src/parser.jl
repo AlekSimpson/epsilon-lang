@@ -19,7 +19,7 @@ end
 function throw_error(state::ParserState, error_tok::Token, error_message::String="", verbose::Bool=true)::ErrorNode
     state.idx = length(state.tokens)
     if verbose
-        printstyled("ERROR: At line $(error_tok.row), col $(error_tok.col):\n$(error_message)\n"; color=:red, blink=true)
+        printstyled("COBOLT ERROR: At line $(error_tok.row), col $(error_tok.col):\n$(error_message)\n"; color=:red, blink=true)
     end
     return ErrorNode(error_tok, error_message)
 end
@@ -52,7 +52,9 @@ function expr(state::ParserState)
     end
 
     ret_val = arith_expr(state)
-    @assert ret_val !== nothing "arith_expr(::ParserState) returning nothing!"
+    if ret_val == nothing 
+        return throw_error(state, state.curr_tok, "arith_expr(::ParserState) returning nothing")
+    end
     return ret_val
 end
 
@@ -61,7 +63,7 @@ end
 function parse_array_dec_type(state::ParserState)
     forward!(state)
     if state.curr_tok.type != LCARROT
-        @assert false "COBOLT ERROR: expected LCARROT in array dec (found $(state.curr_tok.type))"
+        return throw_error(state, state.curr_tok, "expected LCARROT in array dec (found $(state.curr_tok.type))")
     end
 
     forward!(state)
@@ -69,7 +71,7 @@ function parse_array_dec_type(state::ParserState)
     forward!(state)
 
     if state.curr_tok.type != RCARROT
-        @assert false "COBOLT ERROR: expected RCARROT in array dec (found $(state.curr_tok.type))"
+        return throw_error(state, state.curr_tok, "expected RCARROT in array dec (found $(state.curr_tok.type))")
     end
 
     return subtype
@@ -78,18 +80,24 @@ end
 function parse_var_dec(state::ParserState)
     if state.curr_tok.type == VAR 
         forward!(state)
-        @assert state.curr_tok.type == IDENTIFIER "token type did not match expected IDENTIFIER"
+        if state.curr_tok.type != IDENTIFIER
+            return throw_error(state, state.curr_tok, "token type did not match expected IDENTIFIER")
+        end
         var_name = state.curr_tok
         forward!(state)
 
         # NOTE: After you finish variable create beginning of error system, Error Report should include the entire lines nodes and the location of the error specficially
-        @assert (state.curr_tok.type == TYPE_ASSIGN) "token type did not match expected TYPE_ASSIGN"
+        if state.curr_tok.type != TYPE_ASSIGN
+            return throw_error(state, state.curr_tok, "token type did not match expected TYPE_ASSIGN")
+        end
 
         forward!(state)
 
         # this basically is checking if state.curr_tok.type is not equal to any of the data types in the DATA_TYPES array
         vector_check = sum(state.curr_tok.datatype.type .== DATA_TYPES)
-        @assert !(vector_check == 0) "token type did not match one of the expected data types from DATA_TYPES (found $(state.curr_tok.type))"
+        if vector_check == 0
+            return throw_error(state, state.curr_tok, "token type did not match one of the expected data types from DATA_TYPES (found $(state.curr_tok.type))")
+        end
 
         var_name.type = state.curr_tok.type
         var_name.datatype = state.curr_tok.datatype
@@ -100,20 +108,27 @@ function parse_var_dec(state::ParserState)
         end
 
         forward!(state)
-        @assert !(state.curr_tok.type != ASSIGN) "token type did not match expected ASSIGN (found $(state.curr_tok.type))"
+        if state.curr_tok.type != ASSIGN
+            return throw_error(state, state.curr_tok, "Token type did not match expected ASSIGN (found $(state.curr_tok.type))")
+        end
         forward!(state)
         value = expr(state)
 
         ret_val = VarDecNode(var_name, value)
-        @assert ret_val !== nothing "expr(::ParserState) returning nothing!"
+        if ret_val == nothing
+            return throw_error(state, state.curr_tok, "expr(::ParserState) returning nothing!")
+        elseif VDN_has_type_conflict(ret_val)
+            return throw_error(state, state.curr_tok,"Variable had type conflict, ($(var_name) | $(ret_val.assigned_value))" )
+        end
         # checks if variable type matches assigned value type
-        @assert !(VDN_has_type_conflict(ret_val)) "COBOLT ERROR: Variable had type conflict, ($(var_name) | $(ret_val.assigned_value))"
         return VarDecNode(var_name, value) 
     end
 end
 
 function array_expr(state::ParserState)
-    @assert state.curr_tok.type == LBRACKET "expected LBRACKET at beginning of array expression (found $(state.curr_tok.type))"
+    if state.curr_tok.type != LBRACKET
+        return throw_error(state, state.curr_tok, "Expected LBRACKET at beginning of array expression (found $(state.curr_tok.type))")
+    end
     elements::Vector{AbstractNode} = []
 
     forward!(state)
@@ -128,7 +143,7 @@ function array_expr(state::ParserState)
             if state.curr_tok.type != SPACE && state.curr_tok.type == RBRACKET
                 break 
             elseif state.curr_tok.type != SPACE 
-                @assert false "COBOLT EERROR: Expected RBRACKET to end array (found $(state.curr_tok.type))"
+                return throw_error(state, state.curr_tok, "Expected RBRACKET to end array (found $(state.curr_tok.type))")
             end
         end
     end
@@ -304,6 +319,8 @@ function atom(state::ParserState)
         return parse_for_node(state)
     elseif state.curr_tok.type == IDENTIFIER
         return VarAccessNode(state.curr_tok)
+    else
+        return throw_error(state, state.curr_tok, "")
     end
 end
 
