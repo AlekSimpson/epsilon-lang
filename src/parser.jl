@@ -40,6 +40,9 @@ function parse(tokens::Vector{Token})::Vector{AbstractNode}
     state::ParserState = ParserState(tokens, 1, tokens[1])
     node = expr(state)
     state.nodes = [node]
+    println(state.idx)
+    println(length(tokens))
+    println("----------------")
 
     return state.nodes
 end

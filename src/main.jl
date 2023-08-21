@@ -5,7 +5,7 @@ include("parser.jl")
 # test = "var test::Int = 5 + 5" 
 # test = "var test::String = \"test\""
 
-test_code_sample = "for i in 1:3\nvar test::Int = i + 5\nend"
+test_code_sample = "for i in 1:3\nvar test::Int = i + 5\nend\nvar other::Int = 5"
 tokens = lexer(test_code_sample)
 ast = parse(tokens)
 
@@ -20,5 +20,5 @@ function display_ast(ast, debug)
     end
 end
 
-display_ast(ast, true)
+display_ast(ast, false)
 
